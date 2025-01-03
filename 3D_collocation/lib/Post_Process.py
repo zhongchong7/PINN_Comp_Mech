@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.io
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     """
@@ -47,7 +48,7 @@ def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     s23 = temp[10]
     
     ### Visualisation
-    font = {'fontname': 'Times new roman'}
+    font = {'fontname': 'DejaVu Sans'}
     vmax = np.max(u[:, 0])
     vmin = np.min(u[:, 0])
     vlim = np.linspace(vmin, vmax, 10, endpoint=True)
@@ -62,6 +63,7 @@ def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     ax.set_box_aspect((np.ptp(x[:, 1]), np.ptp(x[:, 0]), np.ptp(x[:, 2])))
     ax.invert_xaxis()
     plt.colorbar(im, ticks=vlim, ax=ax, format='%.3f', fraction=0.02)
+    plt.savefig('displacement_x.png', dpi=300, bbox_inches='tight')
     
     vmax = np.max(v[:, 0])
     vmin = np.min(v[:, 0])
@@ -77,6 +79,7 @@ def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     ax.set_box_aspect((np.ptp(x[:, 1]), np.ptp(x[:, 0]), np.ptp(x[:, 2])))
     ax.invert_xaxis()
     plt.colorbar(im, ticks=vlim, ax=ax, format='%.3f', fraction=0.02)
+    plt.savefig('displacement_y.png', dpi=300, bbox_inches='tight')
     
     vmax = np.max(w[:, 0])
     vmin = np.min(w[:, 0])
@@ -92,6 +95,7 @@ def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     ax.set_box_aspect((np.ptp(x[:, 1]), np.ptp(x[:, 0]), np.ptp(x[:, 2])))
     ax.invert_xaxis()
     plt.colorbar(im, ticks=vlim, ax=ax, format='%.3f', fraction=0.02)
+    plt.savefig('displacement_z.png', dpi=300, bbox_inches='tight')
     
     vmax = np.max(s1)
     vmin = np.min(s1)
@@ -107,6 +111,7 @@ def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     ax.set_box_aspect((np.ptp(x[:, 1]), np.ptp(x[:, 0]), np.ptp(x[:, 2])))
     ax.invert_xaxis()
     plt.colorbar(im, ticks=vlim, ax=ax, format='%.3f', fraction=0.02)
+    plt.savefig('stress_x.png', dpi=300, bbox_inches='tight')
     
     vmax = np.max(s2)
     vmin = np.min(s2)
@@ -122,6 +127,7 @@ def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     ax.set_box_aspect((np.ptp(x[:, 1]), np.ptp(x[:, 0]), np.ptp(x[:, 2])))
     ax.invert_xaxis()
     plt.colorbar(im, ticks=vlim, ax=ax, format='%.3f', fraction=0.02)
+    plt.savefig('stress_y.png', dpi=300, bbox_inches='tight')
     
     vmax = np.max(s3)
     vmin = np.min(s3)
@@ -137,7 +143,24 @@ def Post_Process(net_u, net_v, net_w, pinn, his_loss):
     ax.set_box_aspect((np.ptp(x[:, 1]), np.ptp(x[:, 0]), np.ptp(x[:, 2])))
     ax.invert_xaxis()
     plt.colorbar(im, ticks=vlim, ax=ax, format='%.3f', fraction=0.02)
+    plt.savefig('stress_z.png', dpi=300, bbox_inches='tight')
     
-    scipy.io.savemat('out.mat', {'x': x, 'u': np.hstack([u, v, w]), 's1': s1, 's2': s2, 's3': s3, 's12': s12, 's23': s23, 's13': s13})
+    # Save data to CSV files
+    
+    # Save coordinates and displacements
+    df_disp = pd.DataFrame(np.hstack([x, u, v, w]), 
+                          columns=['x', 'y', 'z', 'u', 'v', 'w'])
+    df_disp.to_csv('displacements.csv', index=False)
+    
+    # Save stress components
+    df_stress = pd.DataFrame({
+        'stress_x': s1.flatten(),
+        'stress_y': s2.flatten(),
+        'stress_z': s3.flatten(),
+        'stress_xy': s12.flatten(),
+        'stress_yz': s23.flatten(),
+        'stress_xz': s13.flatten()
+    })
+    df_stress.to_csv('stresses.csv', index=False)
     
     return None
